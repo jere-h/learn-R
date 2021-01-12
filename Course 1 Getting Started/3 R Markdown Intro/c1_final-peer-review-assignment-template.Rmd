@@ -1,6 +1,6 @@
 ---
 title: "Final Report Exercise"
-author: "YOUR NAME"
+author: "Jeremy"
 output: html_document
 ---
 
@@ -52,7 +52,7 @@ Hint: consult the codebook to identify the correct column name for the family in
 Put your code and solution here:
 
 ```{r,problem4}
-dat$faminc_new %>% boxplot(main="Me", xlab="Family Income")
+dat$faminc_new %>% boxplot(main="Jeremy", xlab="Family Income")
 ```
 
 # Problem 5
