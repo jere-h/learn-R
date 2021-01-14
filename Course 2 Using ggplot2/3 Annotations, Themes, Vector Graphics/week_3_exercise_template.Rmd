@@ -1,0 +1,108 @@
+---
+title: "Week 3 Peer Review"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+######DO NOT MODIFY. This will load required packages and data.
+
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggthemes)
+
+cces <- drop_na(read_csv(url("https://www.dropbox.com/s/ahmt12y39unicd2/cces_sample_coursera.csv?raw=1")))
+
+cel <- drop_na(read_csv(url("https://www.dropbox.com/s/4ebgnkdhhxo5rac/cel_volden_wiseman%20_coursera.csv?raw=1")))
+
+```
+
+Following the directions on the Coursera assignment page, you will make four original visualizations. Note that the data for the CCES and CEL data are imported in code in the R Markdown file.
+
+### Put your name here: Jeremy
+
+## Exercise 1
+
+Explain what you are visualizing here: A Boxplot describing Trump approval rates within each racial group.
+
+Put your figure here:
+
+```{r exercise1,echo=FALSE}
+cces$rec_race <- cces$race %>% recode(`1`="White",`2`="Black",`3`="Hispanic",`4`="Asian",`5`="Native American",.default="Others")
+cces$rec_approv <- cces$CC18_308a %>% recode(`1`="Approve",`2`="Approve",.default="Disapprove")
+
+cces %>% 
+  ggplot(aes(x=reorder(rec_race, CC18_308a), y=CC18_308a, fill=rec_race))+
+  geom_boxplot(show.legend=FALSE)+
+  annotate("text",x=1,y=3.3,label="n=4",size=rel(4.5))+ 
+  annotate("text",x=2,y=3.3,label="n=708",size=rel(4.5))+ 
+  annotate("text",x=3,y=3.3,label="n=23",size=rel(4.5))+ 
+  annotate("text",x=4,y=3.3,label="n=19",size=rel(4.5))+ 
+  annotate("text",x=5,y=3.3,label="n=52",size=rel(4.5))+ 
+  annotate("text",x=6,y=3.3,label="n=63",size=rel(4.5))+ 
+  annotate("text",x=3.5,y=3.58,label="(Respondent Size, n)",size=rel(4.7)) +
+  labs(title="Trump Approval Rates within Racial Groups",subtitle="1 is Strongly Approve, 4 is Strongly Disapprove", x="Race",y="Approval")
+```
+
+## Exercise 2
+
+Explain what you are visualizing here: A Barplot showing Public affair awareness of supporters on both sides of the aisle
+
+Put your figure here:
+
+```{r exercise2,echo=FALSE}
+cces$rec_dem <- cces$pid7 %>% recode(`1`="Democrat",`2`="Democrat",`3`="Democrat",`4`="Independent",`5`="Republican",`6`="Republican",`7`="Republican")
+cces$rec_newsint <- cces$newsint %>% recode(`1`="Mostly",`2`="Sometime",.default="Rarely or Never")
+dat2 <- tibble(cces$rec_newsint,cces$rec_dem) %>% table()
+total2 <- dat2[1,]+dat2[2,]+dat2[3,]
+most_pct <- dat2[1,]/total2
+rare_pct <- dat2[2,]/total2
+some_pct <- dat2[3,]/total2
+leaning <- c("Democrats","Independent","Republican")
+dat2 <- tibble(leaning,most_pct,some_pct,rare_pct)
+
+pivot_longer(dat2, c("most_pct","some_pct","rare_pct"), names_to="name",values_to="value") %>% 
+  ggplot(aes(x=leaning,y=value,fill=name)) +
+  geom_col() +
+  scale_fill_manual(name="Responses",values=c("lightgreen","darkred","orange"), labels=c("Mostly follow", "Rarely or Never", "Sometimes Follow")) +
+  labs(x="",y="Percentage of total", title="Public Affair Awareness", subtitle="Respondents were asked: Would you say you follow\nwhat's going on in government and public affairs?") + 
+  theme(axis.text.x = element_text(colour = c("blue","grey","red")))
+```
+
+## Exercise 3
+
+Explain what you are visualizing here: A Scatter plot showing Legislative Effectiveness of members over time
+
+Put your figure here:
+
+```{r exercise3,echo=FALSE}
+cel$rec_dem <- cel$dem %>% recode(`0`="Republican",`1`="Democrat") 
+
+cel %>% 
+  select(rec_dem,congress,les) %>% group_by(congress,rec_dem) %>% 
+  ggplot(aes(x=congress,y=les,color=rec_dem)) + 
+  geom_jitter(size=1.3, alpha=0.3) + 
+  scale_color_manual(name="",values=c("blue","red")) + 
+  theme_wsj() + 
+  theme(title=element_text(size=rel(0.8))) + 
+  labs(title="Legislative Effectiveness of members from past to present", subtitle="LES: Volden and Wiseman's legislative effective score\n(Higher means the member is more effective)", x="Number of Congress", y="LES Score")
+
+```
+
+## Exercise 4
+
+Explain what you are visualizing here: A line plot showing Bills Introduced In Congress over time
+
+Put your figure here:
+
+```{r exercise4,echo=FALSE}
+cel %>%
+  select(rec_dem,congress,all_bills) %>%
+  group_by(congress,rec_dem) %>%
+  summarise(sum=sum(all_bills)) %>%
+  ggplot(aes(x=congress,y=sum,color=rec_dem)) + 
+  geom_line() + 
+  scale_color_manual(name="",values=c("blue","red")) + 
+  labs(title="Total No. of Bills Introduced in Each Congress", x="Number of Congress", y="Bills Introduced") + facet_wrap(~rec_dem)
+
+```
